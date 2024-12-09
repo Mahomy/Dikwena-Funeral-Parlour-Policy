@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html><head><base href="/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dikwena Funeral Parlour Policy Management</title>
@@ -13,7 +11,6 @@
       color: #333;
     }
 
-    /* Header */
     header {
       background-color: #2a3d66;
       color: white;
@@ -29,7 +26,6 @@
       font-size: 14px;
     }
 
-    /* Main Container */
     .container {
       max-width: 1200px;
       margin: 20px auto;
@@ -42,6 +38,7 @@
     .form-section {
       max-width: 600px;
       margin: auto;
+      position: relative;
     }
 
     h2 {
@@ -56,7 +53,6 @@
       margin-bottom: 30px;
     }
 
-    /* Form Styling */
     form {
       background: #f9f9f9;
       padding: 20px;
@@ -93,7 +89,6 @@
       background-color: #1d2e4b;
     }
 
-    /* Footer */
     footer {
       background-color: #2a3d66;
       color: white;
@@ -108,7 +103,54 @@
       font-size: 12px;
     }
 
-    /* Responsive Design */
+    .submit-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(42, 61, 102, 0.9);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease-in-out;
+      z-index: 1000;
+    }
+
+    .submit-message.show {
+      opacity: 1;
+      visibility: visible;
+      animation: fadeInOut 2.5s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -60%); }
+      20% { opacity: 1; transform: translate(-50%, -50%); }
+      80% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -40%); }
+    }
+
+    .spinner {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #2a3d66;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      z-index: 999;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     @media (max-width: 768px) {
       .container {
         margin: 10px;
@@ -139,7 +181,7 @@
       <input type="text" id="Surname" name="Surname" required>
 
       <label for="Identity">Identity:</label>
-      <input type="text" id="Identity" name="Identity" required>
+      <input type="text" id="Identity" name="Identity" maxlength="13" required>
 
       <label for="Contact">Contact:</label>
       <input type="text" id="Contact" name="Contact" required>
@@ -161,6 +203,12 @@
   </div>
 </div>
 
+<div class="submit-message" id="submitMessage">
+  Submission Successful!
+</div>
+
+<div class="spinner" id="loadingSpinner"></div>
+
 <footer>
   <p>© 2024 Dikwena Funeral Parlour. All rights reserved.</p>
 </footer>
@@ -168,28 +216,54 @@
 <script>
   const scriptURL = 'https://script.google.com/macros/s/AKfycbztYqYoV-eyN0NdUiJ5J-4D8IPXtZ7ZFmiCKH47S6bO5bbx0pV3r64-Z4iAu1IDStlhPg/exec';
 
+  document.getElementById('Identity').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '').slice(0, 13);
+  });
+
+  document.getElementById('Contact').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '');
+  });
+
+  function showMessage(message, isError = false) {
+    const messageElement = document.getElementById('submitMessage');
+    messageElement.textContent = message;
+    messageElement.style.backgroundColor = isError ? 'rgba(220, 53, 69, 0.9)' : 'rgba(42, 61, 102, 0.9)';
+    messageElement.classList.add('show');
+    
+    setTimeout(() => {
+      messageElement.classList.remove('show');
+    }, 2500);
+  }
+
+  function showSpinner(show) {
+    document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+  }
+
   function submitData() {
     const form = document.getElementById('dataForm');
     const formData = new FormData(form);
+
+    showSpinner(true);
 
     fetch(scriptURL, {
       method: 'POST',
       body: formData
     })
     .then(response => {
+      showSpinner(false);
       if (response.ok) {
-        alert('Data submitted successfully!');
+        showMessage('Data submitted successfully!');
         form.reset();
       } else {
-        alert('Error submitting data.');
+        showMessage('Error submitting data.', true);
       }
     })
     .catch(error => {
+      showSpinner(false);
       console.error('Error:', error);
-      alert('An error occurred. Please try again.');
+      showMessage('An error occurred. Please try again.', true);
     });
   }
 </script>
 
-</body>
-</html>
+</body></html>
